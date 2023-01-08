@@ -1,6 +1,6 @@
 import ast
 import numpy as np
-
+import argparse
 
 def file_to_tree(str):
     f = open(str, encoding='latin-1')
@@ -114,10 +114,12 @@ class FilesComparing:
         self.file1 = PyAnalizer(file1_path)
         self.file2 = PyAnalizer(file2_path)
         self.dict_comp = {}
+        self.simple_value = 0
         self.compare_files()
         self.compare_vector = [0] * len(self.typelist)
         self.fill_compare_vector()
-        print(self.compare_vector)
+
+        #print(self.compare_vector)
         #self.file1.print_code()
         #self.file2.print_code()
 
@@ -145,18 +147,38 @@ class FilesComparing:
                     self.dict_comp[t] = [maxcoef]
                 else:
                     self.dict_comp[t].append(maxcoef)
-
         for key in self.dict_comp:
             self.dict_comp[key] = np.mean(self.dict_comp[key])
 
     def fill_compare_vector(self):
+        score = []
         for i, key in enumerate(self.typelist):
             if key in self.dict_comp:
                 self.compare_vector[i] = self.dict_comp[key]
+                score.append(self.dict_comp[key]**2)
+        self.simple_value = np.mean(score)
 
 
 
-file1 = f'plagiat/files/auto.py'
-file2 = f'plagiat/files/auto.py'
 
-FilesComparing(file1, file2)
+if __name__ == '__main__':
+
+    pars = argparse.ArgumentParser(description='')
+    pars.add_argument('input', type=str, help='Input file with a list of file pairs to check.')
+    pars.add_argument('scores', type=str, help='Program text similarity evaluation file.')
+    args = pars.parse_args()
+    scores = args.scores
+    inp = args.input
+    f = open(inp)
+    #python compare.py input.txt scores.txt
+    for line in f:
+        files = line.split()
+        file1 = files[0]
+        file2 = files[1]
+        fc = FilesComparing(file1,file2)
+        with open(scores, 'a') as scr:
+            scr.write(str(fc.simple_value)+'\n')
+
+
+
+
