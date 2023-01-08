@@ -1,36 +1,15 @@
 import ast
-import pprint
 
 import graphviz as gv
 import numbers
 import re
 from uuid import uuid4 as uuid
 
-
+'''
+Утилита для визуализации AST
+'''
 
 def main(code, label=None, name='graph', folder = 'unknown'):
-    '''
-    parser = optparse.OptionParser(usage="astvisualizer.py [options] [string]")
-    parser.add_option("-f", "--file", action="store",
-                      help="Read a code snippet from the specified file")
-    parser.add_option("-l", "--label", action="store",
-                      help="The label for the visualization")
-
-    options, args = parser.parse_args(args)
-    if options.file:
-        with open(options.file) as instream:
-            code = instream.read()
-        label = options.file
-    elif len(args) == 2:
-        code = args[1]
-        label = "<code read from command line parameter>"
-    else:
-        print("Expecting Python code on stdin...")
-        code = sys.stdin.read()
-        label = "<code read from stdin>"
-    if options.label:
-        label = options.label
-    '''
     code_ast = ast.parse(code)
     transformed_ast = transform_ast(code_ast)
 
@@ -54,10 +33,6 @@ def to_camelcase(string):
 
 
 class GraphRenderer:
-    """
-    this class is capable of rendering data structures consisting of
-    dicts and lists as a graph using graphviz
-    """
 
     graphattrs = {
         'labelloc': 't',
@@ -118,24 +93,19 @@ class GraphRenderer:
             self._graph.edge(node_id, child_node_id, label=self._escape_dot_label(str(idx)))
 
     def render(self, data, *, label=None, name='graph',folder = 'unknown'):
-        # create the graph
         graphattrs = self.graphattrs.copy()
         if label is not None:
             graphattrs['label'] = self._escape_dot_label(label)
         graph = gv.Digraph(name, graph_attr=graphattrs, node_attr=self.nodeattrs, edge_attr=self.edgeattrs)
 
-        # recursively draw all the nodes and edges
         self._graph = graph
         self._rendered_nodes = set()
         self._render_node(data)
         self._graph = None
         self._rendered_nodes = None
 
-        # display the graph
         graph.format = "pdf"
         graph.render(directory=f'graphviz/{folder}')
-        # graph.save('D:\My_Data\Practice\Python\Antiplagiat\gr.png')
-        # subprocess.Popen(['xdg-open', "test.pdf"])
 
 
 if __name__ == '__main__':
